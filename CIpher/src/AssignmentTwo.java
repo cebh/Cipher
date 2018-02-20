@@ -24,51 +24,28 @@ public class AssignmentTwo {
 
 	public static void main(String[]args) throws FileNotFoundException
 	{
-		hashWords("src//scrabble_words.txt");
+		//get user input
 		Scanner in = new Scanner(System.in);
 		System.out.println("Enter encrypted code:");
 		String cipher = in.nextLine();
+		//attemt ceaser cipher
 		if(!ceaserCipher(cipher))
-		//		HashMap<Character, Integer> test = new HashMap<Character, Integer>();
-		//		//toPattern("classification", calculatePattern("classification", test));
-		//		//System.out.println(isValidPattern("AAH", test));
-		//		test = calculatePattern("cat");
-		//		HashMap<Character, Integer> test2 = calculatePattern("dog");
-		//		System.out.print(Arrays.equals(toPattern("cat"), toPattern("dog")));
-//		HashMap<Character,Character> test1 = new HashMap<Character,Character>();
-//		HashMap<Character,Character> test2 = new HashMap<Character,Character>();
-//		test1.put('c', 'd');
-//		test1.put('a', 'b');
-		//		System.out.println(checkMaps(test1,test2));
-		//		HashMap<Character,Character> test3 = combineMaps(test1,test2);
-		//		printMap(test3);
-		//		System.out.println(searchWordPattern("hello"));
-		//		System.out.println(isValidPattern(cipher, new HashMap<Character,Character>(), ""));
-		//		HashMap<Character,Character> test4 = createKeyMap("hip", "rob");
-		//		printMap(test4);
-		//		HashMap<Character,Character> test5 = new HashMap<Character,Character>();
-		//				test5.put('y', 'a');
-		//				test5.put('h', 'm');
-		//				test5.put('l', 'g');
-		//				test5.put('o', 'y');
-		//			
-		//				System.out.println(checkWordsWithMap("hello", "moggy", test5));
-		//				int[]p1 = toPattern("hello");
-		//				printArray(p1);
-		//		printMap(calculatePattern("Hello"));
-		//		printMap(scrambleKey(generateParentKey()));
-		//hashFitness();
-		//System.out.println(quadgrams.get("AAAA"));
 		{
-			String response = "";
-			while(!response.toUpperCase().equals("Y"))
-			{
-				substitutionCipher(cipher);
-				System.out.println("Correct? Y/N");
-				response = in.nextLine();
-			}
+			//if ceaser cipher doesn't work, try sub cipher
+			substitutionCipher(cipher);
 		}
-		
+//		HashMap<Character,Character> test1 = new HashMap<Character,Character>();
+//		String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//		for(int i = 0; i < 26; i++)
+//		{
+//			test1.put(alphabet.charAt(i), alphabet.charAt(i));
+//		}
+////		test1.put('a', 'b');
+////		test1.put('b', 'a');
+//		
+//		String tester = "BMAERBNDARBSS";
+//		System.out.println((decrypt(tester,test1)));
+//		System.out.println(checkPhrase(tester,test1));
 	}
 
 	public static boolean isValid(String phrase) throws FileNotFoundException
@@ -186,15 +163,15 @@ public class AssignmentTwo {
 		HashMap<Character,Character> bestKey = generateParentKey();
 		double bestFitness = measureFitness(decrypt(cipher, bestKey));
 		int lastHit = 1;
-		for(int i = 0; i < 1000000; i++)
+		for(int i = 0; i < 500000; i++)
 		{
 			lastHit++;
 			HashMap<Character,Character> key = scrambleKey(bestKey);
 
-			for(int j = 0; j < 10 / (lastHit/100.0); j++)
-			{
-				key = scrambleKey(key);
-			}
+//			for(int j = 0; j < 10 / (lastHit/100.0); j++)
+//			{
+//				key = scrambleKey(key);
+//			}
 
 			String decrypted = decrypt(cipher, key);
 			double fitness = measureFitness(decrypted);
@@ -206,9 +183,16 @@ public class AssignmentTwo {
 				System.out.println(i + ":\t" + bestFitness + ":\t" + decrypted);
 			}
 		}
-
-		System.out.println(bestFitness);
-		System.out.println(decrypt(cipher, bestKey));
+		
+		String answer = checkPhrase(cipher, bestKey);
+		if(answer != null)
+		{
+			System.out.print("CORRECT ANSWER");
+			System.out.println(answer);
+		} else {
+			System.out.print("WRONG ANSWER");
+			substitutionCipher(cipher);
+		}
 	}
 
 	/*
@@ -375,7 +359,6 @@ public class AssignmentTwo {
 	}
 	 */
 
-
 	public static HashMap<Character,Character> generateParentKey()
 	{
 		HashMap<Character,Character> parentKey = new HashMap<Character,Character>();
@@ -423,7 +406,8 @@ public class AssignmentTwo {
 			{
 				score += quintgrams.get(subPhrase);
 			}
-		}*/
+		}
+		*/
 		//get quadgrams
 		for(int i = 0; i < phrase.length() - 3; i++)
 		{
@@ -450,6 +434,7 @@ public class AssignmentTwo {
 				score += triFloor;
 			}
 		}
+		
 		//get bigrams
 		for(int i = 0; i < phrase.length() - 1; i++)
 		{
@@ -497,7 +482,7 @@ public class AssignmentTwo {
 		quadFloor = Math.log(0.01/total);
 		System.out.println("TOTAL:" + total);
 
-
+		/*
 		file = new Scanner(new File("src//monograms.txt"));
 		total = getTotal("src//monograms.txt");
 		while(file.hasNextLine())
@@ -531,7 +516,6 @@ public class AssignmentTwo {
 		System.out.println("TOTAL:" + total);
 
 
-		/*
 		//quintgrams
 		total = getTotal("src//quintgrams.txt");
 		file = new Scanner(new File("src//quintgrams.txt"));
@@ -544,6 +528,39 @@ public class AssignmentTwo {
 
 	}
 
+	public static String checkPhrase(String phrase, HashMap<Character,Character> key) throws FileNotFoundException
+	{
+		if(isValid(decrypt(phrase, key)))
+		{
+			return decrypt(phrase, key);
+		}
+		for(int i = 0; i < 26; i++)
+		{
+			for(int j = i + 1; j < 26; j++)
+			{
+				HashMap<Character,Character> tempMap = new HashMap<Character,Character>();
+				for(Character c : key.keySet())
+				{
+					tempMap.put(c,key.get(c));
+				}
+				String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+				int num1 = i;
+				Character char1 = alphabet.charAt(num1);
+				int num2 = j;
+				Character char2 = alphabet.charAt(num2);
+				Character temp = tempMap.get(char1);
+				tempMap.put(char1, tempMap.get(char2));
+				tempMap.put(char2, temp);
+				String potential = decrypt(phrase, tempMap);
+				if(isValid(potential))
+				{
+					return potential;
+				}
+			}
+		}
+		return null;
+	}
+	
 	public static double getTotal(String fileName) throws FileNotFoundException
 	{
 		Scanner file = new Scanner(new File(fileName));
